@@ -1,0 +1,10 @@
+{
+  "name": "gorgias-video-starter",
+  "private": true,
+  "type": "module",
+  "description": "A 16-second starter video for the gorgias-video skill's capture pipeline. Copy this folder, then change it.",
+  "scripts": {
+    "score": "node --experimental-strip-types score.ts",
+    "preview": "python3 -m http.server 8787"
+  }
+}

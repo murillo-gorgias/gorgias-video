@@ -1,0 +1,8 @@
+{
+  "name": "gorgias-video-scripts",
+  "private": true,
+  "description": "The one package the capture script needs. Playwright drives the browser that photographs the page frame by frame. Run `npm i` here once.",
+  "dependencies": {
+    "playwright": "1.62.1"
+  }
+}

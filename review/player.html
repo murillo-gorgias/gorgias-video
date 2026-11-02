@@ -1,0 +1,677 @@
+<title>Video Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Red+Hat+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an editing room. The video and its timeline on the left, the notes beside them on the right. Stacks on a phone. */
+:root {
+  --paper: #FCFAF8; --cream: #F8F5F1; --card: #FFFFFF;
+  --head: #252423; --body: #363433; --text: #5F5C59; --mute: #8E8985;
+  --border: #E8E2DC; --rule: #DFD9D3;
+  --stage: #1B1A19; --on-stage: #FCFAF8;
+  --coral: #FB6B4B; --coral-soft: #FFB5A5; --coral-wash: #FFEAE6;
+  --sky: #D1E9FC; --sage: #C7EBC2; --amber: #FFD896; --rose: #FFD2C9; --orchid: #F7D1FB;
+  --done: #3E7B36;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Red Hat Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #161514; --cream: #201E1D; --card: #252322;
+  --head: #FCFAF8; --body: #E6E1DC; --text: #B8B2AC; --mute: #8E8985;
+  --border: #353230; --rule: #423E3B;
+  --stage: #0B0B0A; --on-stage: #FCFAF8;
+  --coral: #FF8466; --coral-soft: #8A4334; --coral-wash: #3A2420;
+  --sky: #2A4256; --sage: #2F4A2B; --amber: #574522; --rose: #553029; --orchid: #4E3152;
+  --done: #8CCB82;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #161514; --cream: #201E1D; --card: #252322;
+  --head: #FCFAF8; --body: #E6E1DC; --text: #B8B2AC; --mute: #8E8985;
+  --border: #353230; --rule: #423E3B;
+  --stage: #0B0B0A; --on-stage: #FCFAF8;
+  --coral: #FF8466; --coral-soft: #8A4334; --coral-wash: #3A2420;
+  --sky: #2A4256; --sage: #2F4A2B; --amber: #574522; --rose: #553029; --orchid: #4E3152;
+  --done: #8CCB82;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--paper); color: var(--body); font: 400 14px/1.5 var(--sans); }
+button, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 28px; display: grid; gap: 16px; max-width: 1480px; margin: 0 auto; }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; }
+.top h1 { margin: 0; font: 600 20px/1.2 var(--sans); color: var(--head); }
+.meta { font: 400 12.5px/1 var(--mono); color: var(--text); letter-spacing: 0.04em; }
+.banner { font-size: 13px; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+.banner[hidden] { display: none; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+.main { display: grid; gap: 12px; min-width: 0; }
+
+/* Stage */
+.stage { position: relative; background: var(--stage); border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; }
+.stage video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
+.pins { position: absolute; inset: 0; }
+.stage.pinning { cursor: crosshair; }
+.stage.pinning::after { content: "Click the spot this note is about"; position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: var(--coral); color: #1B1A19; font: 500 12.5px/1 var(--sans); padding: 8px 12px; border-radius: 999px; pointer-events: none; }
+.pin { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; background: var(--coral); color: #1B1A19; font: 600 12px/26px var(--mono); text-align: center; box-shadow: 0 0 0 3px rgba(251, 107, 75, 0.35), 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; padding: 0; }
+.pin.draft { background: #FCFAF8; box-shadow: 0 0 0 3px rgba(252, 250, 248, 0.4), 0 2px 8px rgba(0, 0, 0, 0.35); }
+.pin.done { background: var(--sage); color: var(--head); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+
+/* Transport */
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.btn { border: 1px solid var(--rule); background: var(--card); border-radius: 8px; padding: 7px 11px; color: var(--head); display: inline-flex; align-items: center; gap: 6px; min-height: 34px; }
+.btn:hover { border-color: var(--text); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { background: var(--head); color: var(--paper); border-color: var(--head); }
+.btn.primary:hover { opacity: 0.88; }
+.btn.icon { width: 34px; justify-content: center; padding: 0; }
+.btn svg { width: 16px; height: 16px; fill: currentColor; }
+.time { font: 500 15px/1 var(--mono); color: var(--head); font-variant-numeric: tabular-nums; min-width: 92px; }
+.frame { font: 400 12.5px/1 var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+.scene-now { font-size: 13px; color: var(--text); }
+.scene-now b { color: var(--head); font-weight: 500; }
+.spacer { flex: 1; }
+select.btn { padding-right: 8px; }
+kbd { font: 400 11px/1 var(--mono); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; color: var(--text); background: var(--cream); }
+.btn.primary kbd { background: transparent; color: inherit; border-color: currentColor; opacity: 0.7; }
+
+/* Timeline */
+.timeline { border: 1px solid var(--border); border-radius: 12px; background: var(--card); overflow-x: auto; }
+.tl-inner { position: relative; min-width: 560px; display: grid; grid-template-columns: 84px minmax(0, 1fr); user-select: none; -webkit-user-select: none; }
+.tl-label { font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); padding: 0 10px; display: flex; align-items: center; border-right: 1px solid var(--border); }
+.tl-row { position: relative; height: 34px; border-bottom: 1px solid var(--border); }
+.tl-inner > :nth-last-child(-n+2) { border-bottom: 0; }
+.tl-ruler { height: 26px; }
+.tl-tracks { grid-column: 2; grid-row: 1 / span 4; position: relative; cursor: ew-resize; touch-action: none; }
+.tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--border); }
+.tick.bar { border-left-color: var(--rule); }
+.tick-label { position: absolute; top: 7px; margin-left: 5px; font: 400 10.5px/1 var(--mono); color: var(--mute); white-space: nowrap; }
+.band { position: absolute; top: 5px; bottom: 5px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center; font-size: 12px; font-weight: 500; color: var(--head); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.moment { position: absolute; top: 9px; width: 2px; height: 16px; margin-left: -1px; background: var(--text); border-radius: 1px; }
+.moment::after { content: attr(data-label); position: absolute; left: 6px; top: 1px; font: 400 10.5px/1.3 var(--mono); color: var(--text); white-space: nowrap; opacity: 0; transition: opacity 120ms; pointer-events: none; background: var(--card); padding: 0 3px; }
+.moment:hover::after { opacity: 1; }
+.dot { position: absolute; top: 9px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--coral); border: 2px solid var(--card); padding: 0; }
+.dot.done { background: var(--sage); }
+.dot:hover { transform: scale(1.15); }
+.playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--coral); pointer-events: none; z-index: 2; }
+.playhead::before { content: ""; position: absolute; top: 0; left: -5px; border: 6px solid transparent; border-top-color: var(--coral); }
+
+/* Notes panel */
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; display: grid; grid-template-rows: auto auto minmax(0, 1fr); max-height: calc(100vh - 120px); min-height: 360px; min-width: 0; }
+@media (max-width: 1000px) { .panel { max-height: none; } }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.panel-head h2 { margin: 0; font: 600 15px/1 var(--sans); color: var(--head); }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 6px 10px; font-size: 12.5px; color: var(--text); }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--paper); }
+.head-tools { display: flex; align-items: center; gap: 8px; }
+.icon-btn { position: relative; width: 32px; height: 32px; border: 1px solid var(--rule); border-radius: 8px; background: transparent; color: var(--text); display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.icon-btn:hover { color: var(--head); border-color: var(--text); }
+.icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn::after { content: attr(data-tip); position: absolute; right: 0; top: calc(100% + 8px); width: max-content; max-width: 220px; background: var(--head); color: var(--paper); font: 400 12px/1.4 var(--sans); padding: 7px 10px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity 120ms; z-index: 5; text-align: left; }
+.icon-btn:hover::after, .icon-btn:focus-visible::after { opacity: 1; }
+.composer { padding: 14px 16px; border-bottom: 1px solid var(--border); display: grid; gap: 10px; background: var(--coral-wash); }
+.composer[hidden] { display: none; }
+.composer-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--text); }
+.chip { font: 500 12px/1 var(--mono); background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 5px 9px; color: var(--head); }
+textarea { width: 100%; min-height: 84px; resize: vertical; border: 1px solid var(--rule); border-radius: 8px; padding: 9px 11px; background: var(--card); color: var(--head); line-height: 1.45; }
+.linkish { border: 0; background: none; padding: 0; color: var(--head); text-decoration: underline; text-underline-offset: 2px; font-size: 12.5px; }
+.list { overflow-y: auto; padding: 6px 0; }
+.note { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.note:last-child { border-bottom: 0; }
+.note:hover, .note.active { background: var(--cream); }
+.num { width: 24px; height: 24px; border-radius: 50%; background: var(--coral); color: #1B1A19; font: 600 11.5px/24px var(--mono); text-align: center; }
+.note.done .num { background: var(--sage); color: var(--head); }
+.note-top { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 12px; color: var(--text); }
+.note-top .when { font: 500 12px/1 var(--mono); color: var(--head); }
+.note-text { margin: 4px 0 6px; color: var(--head); white-space: pre-wrap; overflow-wrap: anywhere; }
+.note.done .note-text { color: var(--text); }
+.note-actions { display: flex; gap: 12px; }
+.empty { padding: 28px 18px; color: var(--text); font-size: 13.5px; display: grid; gap: 8px; }
+.empty b { color: var(--head); font-weight: 600; font-size: 14px; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--head); color: var(--paper); padding: 9px 14px; border-radius: 8px; font-size: 13px; z-index: 20; }
+.toast[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <div class="top">
+    <h1 id="title">Video review</h1>
+    <span class="meta" id="meta"></span>
+  </div>
+  <p class="banner" id="banner" hidden></p>
+
+  <div class="layout">
+    <div class="main">
+      <div class="stage" id="stage">
+        <video id="video" playsinline preload="auto"></video>
+        <div class="pins" id="pins"></div>
+      </div>
+
+      <div class="transport">
+        <button class="btn icon" id="play" aria-label="Play"><svg viewBox="0 0 16 16"><path id="playIcon" d="M4 2.5v11l9-5.5z"/></svg></button>
+        <button class="btn icon" id="back" aria-label="Back one frame"><svg viewBox="0 0 16 16"><path d="M10.5 3 5 8l5.5 5z"/></svg></button>
+        <button class="btn icon" id="fwd" aria-label="Forward one frame"><svg viewBox="0 0 16 16"><path d="M5.5 3 11 8l-5.5 5z"/></svg></button>
+        <span class="time" id="time">0:00.00</span>
+        <span class="frame" id="frame">frame 0</span>
+        <span class="scene-now" id="sceneNow"></span>
+        <span class="spacer"></span>
+        <select class="btn" id="speed" aria-label="Playback speed">
+          <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option>
+        </select>
+        <button class="btn primary" id="addNote">Add note <kbd>N</kbd></button>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-inner" id="tl">
+          <div class="tl-label tl-ruler">Time</div>
+          <div class="tl-label tl-row">Scenes</div>
+          <div class="tl-label tl-row">Moments</div>
+          <div class="tl-label tl-row">Notes</div>
+          <div class="tl-tracks" id="tracks">
+            <div class="tl-ruler" id="ruler" style="position:relative;border-bottom:1px solid var(--border)"></div>
+            <div class="tl-row" id="rowScenes"></div>
+            <div class="tl-row" id="rowMoments"></div>
+            <div class="tl-row" id="rowNotes" style="border-bottom:0"></div>
+            <div class="playhead" id="playhead"></div>
+          </div>
+        </div>
+      </div>
+      <p class="meta">Space plays. Arrow keys step one frame, with Shift one second. N adds a note at the current frame.</p>
+    </div>
+
+    <aside class="panel" aria-label="Notes">
+      <div class="panel-head">
+        <h2 id="noteCount">Notes</h2>
+        <div class="head-tools">
+          <div class="seg" role="group" aria-label="Show">
+            <button id="showOpen" aria-pressed="true">Open</button>
+            <button id="showAll" aria-pressed="false">All</button>
+          </div>
+          <button type="button" class="icon-btn" id="copyNotes" aria-label="Copy notes" data-tip="Copy every note as text, with its time and frame, to paste into Claude."><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5"/><path d="M10.5 5.5V3.5A1.5 1.5 0 0 0 9 2H4A1.5 1.5 0 0 0 2.5 3.5v6A1.5 1.5 0 0 0 4 11h1.5"/></svg></button>
+        </div>
+      </div>
+      <form class="composer" id="composer" hidden>
+        <div class="composer-row">
+          <span class="chip" id="draftWhen">0:00.00</span>
+          <span id="draftPinText">No spot pinned.</span>
+          <button type="button" class="linkish" id="pinBtn">Pin a spot</button>
+        </div>
+        <label for="draftText" class="meta" style="letter-spacing:0">What should change here?</label>
+        <textarea id="draftText" placeholder="The headline leaves too early. Hold it half a second longer."></textarea>
+        <div class="composer-row">
+          <button type="submit" class="btn primary" id="saveNote">Save note</button>
+          <button type="button" class="btn" id="cancelNote">Cancel</button>
+        </div>
+      </form>
+      <div class="list" id="list"></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const video = $('video');
+  const state = {
+    cfg: null, notes: [], filter: 'open', draft: null, pinning: false,
+    store: null, mode: 'browser', me: null, names: {}, activeId: null,
+  };
+  const LOCAL_KEY = 'video-review-notes';
+
+  /* ---------- time helpers ---------- */
+  const fps = () => state.cfg?.fps || 30;
+  const duration = () => state.cfg?.duration || video.duration || 1;
+  const frameAt = (t) => Math.min(Math.floor(t * fps() + 1e-3), Math.round(duration() * fps()) - 1);
+  const timeOfFrame = (f) => (f + 0.5) / fps();
+  const fmt = (t) => {
+    const m = Math.floor(t / 60), s = t - m * 60;
+    return `${m}:${s.toFixed(2).padStart(5, '0')}`;
+  };
+  const pct = (t) => `${(t / duration()) * 100}%`;
+  const sceneAt = (t) => (state.cfg?.scenes || []).find((s) => t >= s.start && t < s.end);
+  const seekFrame = (f) => {
+    const max = Math.round(duration() * fps()) - 1;
+    video.currentTime = timeOfFrame(Math.max(0, Math.min(max, f)));
+  };
+
+  /* ---------- toast ---------- */
+  let toastTimer;
+  const toast = (msg) => {
+    const el = $('toast');
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  };
+
+  /* ---------- timeline ---------- */
+  const SCENE_COLORS = ['--sky', '--rose', '--sage', '--amber', '--orchid'];
+  const drawTimeline = () => {
+    const cfg = state.cfg;
+    const ruler = $('ruler'), scenes = $('rowScenes'), moments = $('rowMoments');
+    ruler.replaceChildren(); scenes.replaceChildren(); moments.replaceChildren();
+    const bar = cfg.bpm ? (60 / cfg.bpm) * 4 : 1;
+    for (let t = 0, i = 1; t < duration() - 1e-6; t += bar, i++) {
+      const tick = document.createElement('div');
+      tick.className = 'tick bar'; tick.style.left = pct(t);
+      const label = document.createElement('span');
+      label.className = 'tick-label';
+      label.textContent = cfg.bpm ? `bar ${i} · ${fmt(t).replace(/\.00$/, '')}` : fmt(t);
+      tick.append(label); ruler.append(tick);
+    }
+    (cfg.scenes || []).forEach((s, i) => {
+      const b = document.createElement('div');
+      b.className = 'band';
+      b.style.left = `calc(${pct(s.start)} + 2px)`;
+      b.style.width = `calc(${pct(s.end - s.start)} - 4px)`;
+      b.style.background = `var(${SCENE_COLORS[i % SCENE_COLORS.length]})`;
+      b.textContent = s.name; b.title = `${s.name}: ${fmt(s.start)} to ${fmt(s.end)}`;
+      scenes.append(b);
+    });
+    (cfg.moments || []).forEach((m) => {
+      const k = document.createElement('div');
+      k.className = 'moment'; k.style.left = pct(m.t);
+      k.dataset.label = `${m.label} · ${fmt(m.t)}`; k.title = k.dataset.label;
+      moments.append(k);
+    });
+  };
+
+  const scrub = (e) => {
+    const r = $('tracks').getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    seekFrame(frameAt(x * duration()));
+  };
+  $('tracks').addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.dot')) return;
+    video.pause(); scrub(e);
+    $('tracks').setPointerCapture(e.pointerId);
+    const move = (ev) => scrub(ev);
+    const up = () => { $('tracks').removeEventListener('pointermove', move); $('tracks').removeEventListener('pointerup', up); };
+    $('tracks').addEventListener('pointermove', move);
+    $('tracks').addEventListener('pointerup', up);
+  });
+
+  /* ---------- notes: numbering, list, markers, pins ---------- */
+  const ordered = () => [...state.notes].sort((a, b) => a.t - b.t || a.createdAt - b.createdAt);
+  const numberOf = (id) => ordered().findIndex((n) => n.id === id) + 1;
+  const visible = () => ordered().filter((n) => state.filter === 'all' || n.status !== 'done');
+  const authorName = (n) => (state.me && n.author === state.me ? 'You' : state.names[n.author] || (n.author === 'local' ? 'You' : 'Someone'));
+
+  const renderNotes = () => {
+    const open = state.notes.filter((n) => n.status !== 'done').length;
+    $('noteCount').textContent = `Notes · ${open} open`;
+    const list = $('list');
+    list.replaceChildren();
+    const items = visible();
+    if (!items.length) {
+      const e = document.createElement('div');
+      e.className = 'empty';
+      const b = document.createElement('b');
+      b.textContent = state.notes.length ? 'Every note is resolved.' : 'No notes yet.';
+      const p = document.createElement('span');
+      p.textContent = state.notes.length
+        ? 'Switch to All to see them.'
+        : 'Pause on the frame you want to change, press N, and write what should change. Pin a spot on the picture if it helps.';
+      e.append(b, p); list.append(e);
+    }
+    items.forEach((n) => {
+      const row = document.createElement('div');
+      row.className = `note${n.status === 'done' ? ' done' : ''}${n.id === state.activeId ? ' active' : ''}`;
+      row.tabIndex = 0;
+      const num = document.createElement('span');
+      num.className = 'num'; num.textContent = numberOf(n.id);
+      const body = document.createElement('div');
+      const top = document.createElement('div');
+      top.className = 'note-top';
+      const when = document.createElement('span');
+      when.className = 'when'; when.textContent = `${fmt(n.t)} · f${n.frame}`;
+      const sc = sceneAt(n.t);
+      const where = document.createElement('span'); where.textContent = sc ? sc.name : '';
+      const who = document.createElement('span'); who.textContent = authorName(n);
+      top.append(when, where, who);
+      const text = document.createElement('p');
+      text.className = 'note-text'; text.textContent = n.text;
+      const actions = document.createElement('div');
+      actions.className = 'note-actions';
+      const resolve = document.createElement('button');
+      resolve.type = 'button'; resolve.className = 'linkish';
+      resolve.textContent = n.status === 'done' ? 'Reopen' : 'Resolve';
+      resolve.addEventListener('click', (ev) => { ev.stopPropagation(); setStatus(n, n.status === 'done' ? 'open' : 'done'); });
+      actions.append(resolve);
+      if (canDelete(n)) {
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'linkish'; del.textContent = 'Delete';
+        del.addEventListener('click', (ev) => { ev.stopPropagation(); removeNote(n, del); });
+        actions.append(del);
+      }
+      body.append(top, text, actions);
+      row.append(num, body);
+      const go = () => { state.activeId = n.id; video.pause(); seekFrame(n.frame); renderNotes(); };
+      row.addEventListener('click', go);
+      row.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') go(); });
+      list.append(row);
+    });
+
+    const markers = $('rowNotes');
+    markers.replaceChildren();
+    ordered().forEach((n) => {
+      const d = document.createElement('button');
+      d.type = 'button';
+      d.className = `dot${n.status === 'done' ? ' done' : ''}`;
+      d.style.left = pct(n.t);
+      d.title = `${numberOf(n.id)}. ${n.text}`;
+      d.setAttribute('aria-label', `Note ${numberOf(n.id)} at ${fmt(n.t)}`);
+      d.addEventListener('click', () => { state.activeId = n.id; video.pause(); seekFrame(n.frame); renderNotes(); });
+      markers.append(d);
+    });
+    renderPins();
+  };
+
+  const renderPins = () => {
+    const pins = $('pins');
+    pins.replaceChildren();
+    const f = frameAt(video.currentTime);
+    const near = Math.round(fps() * 0.5);
+    ordered().forEach((n) => {
+      if (n.x == null || Math.abs(n.frame - f) > near) return;
+      if (state.filter === 'open' && n.status === 'done') return;
+      const p = document.createElement('button');
+      p.type = 'button';
+      p.className = `pin${n.status === 'done' ? ' done' : ''}`;
+      p.style.left = `${n.x * 100}%`; p.style.top = `${n.y * 100}%`;
+      p.textContent = numberOf(n.id);
+      p.title = n.text;
+      p.addEventListener('click', (ev) => { ev.stopPropagation(); state.activeId = n.id; renderNotes(); });
+      pins.append(p);
+    });
+    if (state.draft && state.draft.x != null) {
+      const p = document.createElement('span');
+      p.className = 'pin draft';
+      p.style.left = `${state.draft.x * 100}%`; p.style.top = `${state.draft.y * 100}%`;
+      p.textContent = '+';
+      pins.append(p);
+    }
+  };
+
+  /* ---------- composer ---------- */
+  const openComposer = () => {
+    if (state.readOnly) { toast('You can read notes on this page, but not add them.'); return; }
+    video.pause();
+    const f = frameAt(video.currentTime);
+    state.draft = { frame: f, t: timeOfFrame(f) - 0.5 / fps(), x: null, y: null };
+    $('draftWhen').textContent = `${fmt(state.draft.t)} · f${f}`;
+    $('draftPinText').textContent = 'No spot pinned.';
+    $('pinBtn').textContent = 'Pin a spot';
+    $('draftText').value = '';
+    $('composer').hidden = false;
+    $('draftText').focus();
+    renderPins();
+  };
+  const closeComposer = () => {
+    state.draft = null; state.pinning = false;
+    $('stage').classList.remove('pinning');
+    $('composer').hidden = true;
+    renderPins();
+  };
+  $('addNote').addEventListener('click', openComposer);
+  $('cancelNote').addEventListener('click', closeComposer);
+  $('pinBtn').addEventListener('click', () => {
+    if (!state.draft) return;
+    if (state.draft.x != null) {
+      state.draft.x = null; state.draft.y = null;
+      $('draftPinText').textContent = 'No spot pinned.';
+      $('pinBtn').textContent = 'Pin a spot';
+      renderPins(); return;
+    }
+    state.pinning = true;
+    $('stage').classList.add('pinning');
+  });
+  $('stage').addEventListener('click', (e) => {
+    if (!state.pinning || !state.draft) return;
+    const r = $('stage').getBoundingClientRect();
+    state.draft.x = Math.round(((e.clientX - r.left) / r.width) * 1000) / 1000;
+    state.draft.y = Math.round(((e.clientY - r.top) / r.height) * 1000) / 1000;
+    state.pinning = false;
+    $('stage').classList.remove('pinning');
+    $('draftPinText').textContent = 'Spot pinned.';
+    $('pinBtn').textContent = 'Remove the pin';
+    renderPins();
+    $('draftText').focus();
+  });
+  $('composer').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = $('draftText').value.trim();
+    if (!text) { toast('Write what should change first.'); $('draftText').focus(); return; }
+    const d = state.draft;
+    const note = { t: Math.round(d.t * 1000) / 1000, frame: d.frame, x: d.x, y: d.y, text, status: 'open', createdAt: Date.now() };
+    $('saveNote').disabled = true;
+    try {
+      await addNote(note);
+      closeComposer();
+      toast('Note saved');
+    } catch (err) {
+      toast(saveError(err));
+    } finally {
+      $('saveNote').disabled = false;
+    }
+  });
+
+  /* ---------- storage: the shared database, or this browser ---------- */
+  const saveError = (err) => {
+    const code = err && err.code;
+    if (code === 'local') return 'The note did not save. Is review-server.py still running?';
+    if (code === 'invalid_argument') { setReadOnly(); return 'Your access lets you read notes, not add them.'; }
+    if (code === 'quota_exceeded') return 'The notes store is full. Delete resolved notes, then try again.';
+    if (code === 'resource_exhausted') return 'Too many changes at once. Wait a moment and try again.';
+    return 'The note did not save. Check your connection and try again.';
+  };
+  const setReadOnly = () => {
+    state.readOnly = true;
+    $('addNote').disabled = true;
+    showBanner('Your access to this page is view-only, so you can read notes but not add or change them. Ask its owner for Contributor access.');
+  };
+  const showBanner = (msg) => { $('banner').textContent = msg; $('banner').hidden = false; };
+
+  const local = {
+    load() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY + ':' + (state.cfg?.title || '')) || '[]'); } catch { return []; } },
+    save() { try { localStorage.setItem(LOCAL_KEY + ':' + (state.cfg?.title || ''), JSON.stringify(state.notes)); } catch { toast('This browser blocked saving. Notes last until you close the page.'); } },
+  };
+
+  const canDelete = (n) => state.mode !== 'db' || !state.me || n.author === state.me || state.isOwner;
+
+  /* The project folder: review-server.py keeps notes.json next to this page. */
+  const file = {
+    async load() {
+      const res = await fetch('api/notes', { cache: 'no-store' });
+      if (!res.ok) throw new Error('no server');
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('bad notes');
+      return data;
+    },
+    async save(notes) {
+      const res = await fetch('api/notes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(notes) });
+      if (!res.ok) throw new Error('save failed');
+    },
+  };
+
+  /* Apply a change to the list and keep it in the folder or the browser. Rolls back if the folder save fails. */
+  const commitLocal = async (next) => {
+    const before = state.notes;
+    state.notes = next; renderNotes();
+    if (state.mode === 'browser') { local.save(); return true; }
+    try { await file.save(next); return true; }
+    catch { state.notes = before; renderNotes(); toast('The note did not save. Is review-server.py still running?'); return false; }
+  };
+
+  const addNote = async (note) => {
+    if (state.mode === 'db') {
+      await state.store.collection('notes').add({ ...note, author: state.me || '' });
+      return;
+    }
+    const ok = await commitLocal([...state.notes, { ...note, id: `n${Date.now()}`, author: 'local' }]);
+    if (!ok) throw { code: 'local' };
+  };
+  const setStatus = async (n, status) => {
+    if (state.mode === 'db') {
+      try { await state.store.doc(`notes/${n.id}`).update({ status }); }
+      catch (err) { toast(saveError(err)); }
+      return;
+    }
+    await commitLocal(state.notes.map((x) => (x.id === n.id ? { ...x, status } : x)));
+  };
+  const removeNote = async (n, btn) => {
+    if (btn.dataset.armed !== '1') { btn.dataset.armed = '1'; btn.textContent = 'Click again to delete'; return; }
+    if (state.mode === 'db') {
+      try { await state.store.doc(`notes/${n.id}`).delete(); toast('Note deleted'); }
+      catch (err) { toast(saveError(err)); }
+      return;
+    }
+    if (await commitLocal(state.notes.filter((x) => x.id !== n.id))) toast('Note deleted');
+  };
+
+  /* Copy every note as plain text, for pasting into Claude. */
+  const notesAsText = () => {
+    const cfg = state.cfg || {};
+    const head = `Review notes: ${cfg.title || 'video'}${cfg.version ? `, ${cfg.version}` : ''}`;
+    const lines = ordered().map((n) => {
+      const sc = sceneAt(n.t);
+      const spot = n.x != null ? `, spot ${Math.round(n.x * 100)}% across, ${Math.round(n.y * 100)}% down` : '';
+      return `${numberOf(n.id)}. [${n.status === 'done' ? 'resolved' : 'open'}] ${fmt(n.t)}, frame ${n.frame}${sc ? `, ${sc.name}` : ''}${spot}: ${n.text}`;
+    });
+    return [head, ...(lines.length ? lines : ['No notes yet.'])].join('\n');
+  };
+  $('copyNotes').addEventListener('click', async () => {
+    const text = notesAsText();
+    try { await navigator.clipboard.writeText(text); toast('Notes copied'); }
+    catch {
+      const area = document.createElement('textarea');
+      area.value = text; area.setAttribute('readonly', '');
+      area.style.position = 'fixed'; area.style.opacity = '0';
+      document.body.append(area); area.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch { ok = false; }
+      area.remove();
+      toast(ok ? 'Notes copied' : 'Copying was blocked. Select the notes list and copy it by hand.');
+    }
+  });
+
+  const resolveNames = async (user) => {
+    const ids = [...new Set(state.notes.map((n) => n.author).filter((id) => id && id !== state.me && !(id in state.names)))];
+    if (!ids.length) return;
+    try {
+      const ps = await user.profiles(ids);
+      ids.forEach((id) => { state.names[id] = (ps[id] && ps[id].name) || 'Someone'; });
+      renderNotes();
+    } catch { /* names stay as "Someone" */ }
+  };
+
+  const connect = async () => {
+    const claude = window.claude;
+    const [db, user] = claude && claude.use
+      ? await Promise.all([claude.use('db'), claude.use('user')])
+      : [null, null];
+    if (!db) {
+      try {
+        state.notes = await file.load();
+        state.mode = 'file';
+        $('meta').textContent += ' · notes save to notes.json in this folder';
+      } catch {
+        state.notes = local.load();
+        state.mode = 'browser';
+        showBanner('Notes are saved in this browser only. Start the page with review-server.py to save them in the project folder, or use the copy button to paste them into Claude.');
+      }
+      renderNotes();
+      return;
+    }
+    state.store = db;
+    state.mode = 'db';
+    if (user) {
+      try { state.me = await user.id(); } catch { state.me = null; }
+      try { state.isOwner = await user.isOwner(); } catch { state.isOwner = false; }
+      try { if ((await user.can('data.write')) === false) setReadOnly(); } catch { /* keep inputs */ }
+    }
+    db.collection('notes').onSnapshot((snap) => {
+      state.notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderNotes();
+      if (user) resolveNames(user);
+    }, (err) => {
+      if (err && err.code === 'revoked') { showBanner('This page can no longer reach its notes. Reload to try again.'); return; }
+      showBanner('Notes could not load. Reload the page to try again.');
+    });
+  };
+
+  /* ---------- playback ---------- */
+  const playIcon = () => {
+    $('playIcon').setAttribute('d', video.paused ? 'M4 2.5v11l9-5.5z' : 'M4 2.5h3v11H4zM9 2.5h3v11H9z');
+    $('play').setAttribute('aria-label', video.paused ? 'Play' : 'Pause');
+  };
+  const tick = () => {
+    const t = video.currentTime;
+    const f = frameAt(t);
+    $('time').textContent = fmt(t);
+    $('frame').textContent = `frame ${f}`;
+    $('playhead').style.left = pct(t);
+    const sc = sceneAt(t);
+    $('sceneNow').replaceChildren();
+    if (sc) { const b = document.createElement('b'); b.textContent = sc.name; $('sceneNow').append('Scene: ', b); }
+    renderPins();
+  };
+  let raf = 0;
+  const loop = () => { tick(); if (!video.paused) raf = requestAnimationFrame(loop); };
+  video.addEventListener('play', () => { playIcon(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
+  video.addEventListener('pause', () => { playIcon(); tick(); });
+  video.addEventListener('seeked', tick);
+  video.addEventListener('loadedmetadata', tick);
+  $('play').addEventListener('click', () => { if (video.paused) video.play().catch(() => toast('Click the video once to allow playback.')); else video.pause(); });
+  $('back').addEventListener('click', () => { video.pause(); seekFrame(frameAt(video.currentTime) - 1); });
+  $('fwd').addEventListener('click', () => { video.pause(); seekFrame(frameAt(video.currentTime) + 1); });
+  $('speed').addEventListener('change', (e) => { video.playbackRate = Number(e.target.value); });
+  $('showOpen').addEventListener('click', () => { state.filter = 'open'; $('showOpen').setAttribute('aria-pressed', 'true'); $('showAll').setAttribute('aria-pressed', 'false'); renderNotes(); });
+  $('showAll').addEventListener('click', () => { state.filter = 'all'; $('showAll').setAttribute('aria-pressed', 'true'); $('showOpen').setAttribute('aria-pressed', 'false'); renderNotes(); });
+
+  document.addEventListener('keydown', (e) => {
+    const typing = e.target.closest('textarea, input, select');
+    if (e.key === 'Escape') { if (state.draft) closeComposer(); return; }
+    if (typing) { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') $('composer').requestSubmit(); return; }
+    if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault(); video.pause();
+      const step = e.shiftKey ? fps() : 1;
+      seekFrame(frameAt(video.currentTime) + (e.key === 'ArrowRight' ? step : -step));
+    } else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openComposer(); }
+  });
+
+  /* ---------- start ---------- */
+  const start = async () => {
+    try {
+      const res = await fetch('review.json');
+      if (!res.ok) throw new Error('missing');
+      state.cfg = await res.json();
+    } catch {
+      state.cfg = { title: 'Video review', fps: 30, duration: 0, scenes: [], moments: [], video: 'video.mp4' };
+      showBanner('This page has no review.json next to it, so the timeline has no scenes. The video still plays.');
+    }
+    const cfg = state.cfg;
+    document.title = `${cfg.title} · Review`;
+    $('title').textContent = cfg.title;
+    $('meta').textContent = [cfg.size, `${cfg.fps} fps`, cfg.duration ? `${cfg.duration} s` : '', cfg.bpm ? `${cfg.bpm} BPM` : '', cfg.version].filter(Boolean).join(' · ');
+    video.src = cfg.video || 'video.mp4';
+    if (cfg.poster) video.poster = cfg.poster;
+    if (cfg.size) { const [w, h] = cfg.size.split(/\D+/).map(Number); if (w && h) $('stage').style.aspectRatio = `${w} / ${h}`; }
+    video.addEventListener('loadedmetadata', () => { if (!cfg.duration) { cfg.duration = video.duration; drawTimeline(); renderNotes(); } });
+    drawTimeline();
+    renderNotes();
+    tick();
+    connect();
+  };
+  start();
+})();
+</script>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gorgias video starter</title>
+<style>
+  @font-face { font-family: 'Feature Deck'; src: url('assets/fonts/FeatureDeck-Regular-Web.woff2') format('woff2'); font-weight: 400; font-display: block; }
+  @font-face { font-family: 'Inter Variable'; src: url('assets/fonts/InterVariable.woff2') format('woff2'); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: 'Red Hat Mono'; src: url('assets/fonts/RedHatMono-VF.woff2') format('woff2'); font-weight: 300 700; font-display: block; }
+  html, body { margin: 0; background: #FCFAF8; }
+  body { position: relative; overflow: hidden; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+  img { user-select: none; }
+</style>
+</head>
+<body>
+<script>
+  /* frames = TOTAL_SECONDS in timeline.js × fps. Change both together. */
+  window.VIDEO = {
+    width: 1920,
+    height: 1080,
+    fps: 30,
+    frames: 480,
+    fonts: ['400 20px "Feature Deck"', '400 20px "Inter Variable"', '500 20px "Inter Variable"', '600 20px "Inter Variable"', '500 20px "Red Hat Mono"'],
+    audio: 'out/mix.wav',
+  };
+</script>
+<script src="runtime.js"></script>
+<script type="module" src="video.js"></script>
+</body>
+</html>
