@@ -82,6 +82,8 @@ The brand kit holds the fonts and logos. The brand team shares it separately. Vi
         RedHatMono-VF.woff2
   ```
 
+If you received the kit as `gorgias-brand.zip`, unzip it into your home folder with `unzip gorgias-brand.zip -d ~`. That creates `~/gorgias-brand/` with the layout above.
+
 Keep one brand kit folder per computer, outside any video project and outside this skill. Never copy brand files into a project or into this repo. When the kit changes, replace the folder, and every video uses the new files on its next render.
 
 ### 6. Optional: captions from a voice recording
