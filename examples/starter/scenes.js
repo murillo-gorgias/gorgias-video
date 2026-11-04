@@ -204,8 +204,8 @@ export const product = () => {
 
 export const close = () => {
   const headline = h('div', {position: 'absolute', left: 0, width: W, top: 330, textAlign: 'center', fontFamily: FONT.display, fontWeight: 400, fontSize: 150, lineHeight: 1.04, letterSpacing: '-0.015em', color: COLOR.onInk}, COPY.close);
-  const logo = img('assets/primary-logo-white.svg', {position: 'absolute', left: W / 2 - 200, top: 650, width: 400});
-  const orbit = img('assets/orbit-dark.svg', {position: 'absolute', width: 900, right: -300, bottom: -420, opacity: 0.9});
+  const logo = img('/brand/primary-logo-white.svg', {position: 'absolute', left: W / 2 - 200, top: 650, width: 400});
+  const orbit = img('/brand/2026/orbit-dark.svg', {position: 'absolute', width: 900, right: -300, bottom: -420, opacity: 0.9});
   const el = fill({background: COLOR.ink, overflow: 'hidden'}, [grid('#232221'), orbit, headline, logo]);
   el.update = (t) => {
     const d = drift(t, 'close', 3);

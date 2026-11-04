@@ -5,6 +5,6 @@
   "description": "A 16-second starter video for the gorgias-video skill's capture pipeline. Copy this folder, then change it.",
   "scripts": {
     "score": "node --experimental-strip-types score.ts",
-    "preview": "python3 -m http.server 8787"
+    "preview": "node \"${GORGIAS_VIDEO_SKILL:-$HOME/.claude/skills/gorgias-video}/scripts/preview.js\" ."
   }
 }

@@ -13,7 +13,8 @@ my-video/
   timeline.js       the beat grid and every time a sound depends on
   score.ts          the music arrangement, reads timeline.js and scripts/synth/
   audio.json        the audio list for mix-audio.py
-  assets/           fonts, icons, logos, images, copied in
+  assets/           this video's own icons, screenshots and images
+                    (brand fonts and logos come from /brand/, never copied in)
   STORYBOARD.md     the beat sheet and how to change things
   out/              frames/, mix.wav, master.mp4, light.mp4 (not in git)
 ```
@@ -50,9 +51,9 @@ The capture loop waits until every hold is released before photographing. A hold
 
 ## Preview in a browser
 
-Serve the folder (`python3 -m http.server 8787` in the project) and open http://localhost:8787/?play to watch the video with sound. Click once: browsers only play sound after a click. The runtime runs a clock from the real time and calls `onFrame` with the matching frame, so the preview and the capture draw from the same code. `?frame=120` shows one frame still. `?play&from=10` starts at 10 s. The preview drops frames on heavy scenes; the capture never does. Verify on a rendered file, never the preview.
+Serve the folder with `node <skill>/scripts/preview.js <project>` (checked 2026-11-04) and open http://127.0.0.1:8787/?play to watch the video with sound. Click once: browsers only play sound after a click. The runtime runs a clock from the real time and calls `onFrame` with the matching frame, so the preview and the capture draw from the same code. `?frame=120` shows one frame still. `?play&from=10` starts at 10 s. The preview drops frames on heavy scenes; the capture never does. Verify on a rendered file, never the preview.
 
-A page opened straight from a file cannot load JavaScript modules or fetch data. That is why both the preview and `capture.js` serve the folder over HTTP.
+A page opened straight from a file cannot load JavaScript modules or fetch data. That is why both the preview and `capture.js` serve the folder over HTTP. Both also serve the brand kit folder at `/brand/` (`SETUP.md` step 3), so the page uses the same brand addresses as every other Gorgias tool. A plain `python3 -m http.server` cannot serve `/brand/`, so its fonts and logos come out missing.
 
 ## Capture
 

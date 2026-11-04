@@ -1,6 +1,6 @@
 # Starter video
 
-A small, complete video project for the capture pipeline. Copy this folder, fill in the brand assets, and change it into the video the brief asks for.
+A small, complete video project for the capture pipeline. Copy this folder and change it into the video the brief asks for.
 
 It shows the house approach in 16 seconds:
 
@@ -29,15 +29,13 @@ It shows the house approach in 16 seconds:
 
 1. **Copy this folder** to where the video project should live, and give it a name.
 2. **Copy the page runtime** from the skill: `scripts/page/runtime.js` into the project folder, next to `index.html`.
-3. **Fill `assets/` from the Gorgias brand kit.** The `brand:core` skill describes the kit, which is served at `/brand/` in Gorgias tools. Fonts and logos are never shipped with this skill. Copy these files:
+3. **Check the brand kit folder.** The page loads its fonts and logos from `/brand/`, the brand kit's address in every Gorgias tool. The capture and the preview serve that address from the brand kit folder that the skill's `SETUP.md` step 3 describes. Nothing gets copied into the project. The starter uses these five files from the kit:
 
-   | Put it at | Take it from the brand kit |
-   |---|---|
-   | `assets/fonts/FeatureDeck-Regular-Web.woff2` | `/brand/2026/fonts/FeatureDeck-Regular-Web.woff2` |
-   | `assets/fonts/InterVariable.woff2` | `/brand/2026/fonts/InterVariable.woff2` |
-   | `assets/fonts/RedHatMono-VF.woff2` | `/brand/2026/fonts/RedHatMono-VF.woff2` |
-   | `assets/primary-logo-white.svg` | `/brand/primary-logo-white.svg` |
-   | `assets/orbit-dark.svg` | `/brand/2026/orbit-dark.svg` |
+   - `/brand/2026/fonts/FeatureDeck-Regular-Web.woff2`
+   - `/brand/2026/fonts/InterVariable.woff2`
+   - `/brand/2026/fonts/RedHatMono-VF.woff2`
+   - `/brand/primary-logo-white.svg`
+   - `/brand/2026/orbit-dark.svg`
 
 4. **Point the score at the skill.** `score.ts` loads the synth from `~/.claude/skills/gorgias-video/scripts/synth/`. If the skill sits elsewhere, set `GORGIAS_VIDEO_SKILL=/path/to/gorgias-video` when you run it, or change the `SKILL` line at the top of `score.ts`.
 
@@ -57,7 +55,7 @@ $SKILL/scripts/assemble.sh out/frames 30 out/mix.wav out/video.mp4
 $SKILL/scripts/loudness.sh out/video.mp4
 ```
 
-Check single frames and the contact sheet before capturing every frame. To preview in a browser, run `npm run preview` and open `http://localhost:8787/?play`.
+Check single frames and the contact sheet before capturing every frame. To preview in a browser, run `npm run preview` and open `http://127.0.0.1:8787/?play`.
 
 ## What to change first
 

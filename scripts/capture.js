@@ -15,6 +15,10 @@
  * two paint cycles, then writes a PNG. A frame that is not ready within 20 s stops the run
  * and prints what was still loading.
  *
+ * The page's folder is served over HTTP, with the Gorgias brand kit at /brand/ (serve.js).
+ * A brand file the kit does not have stops the run and names the file, so a missing font
+ * never falls back to a system font unnoticed.
+ *
  * Needs the `playwright` package: run `npm i` in scripts/ once. The browser itself is a
  * separate download: `npx playwright install chromium`.
  */
@@ -22,7 +26,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
-const http = require('node:http');
+const {serveFolder, missingBrandMessage} = require('./serve.js');
 
 const READY_TIMEOUT_MS = 20000;
 const SHUTTER_ANGLE = 180;
@@ -64,44 +68,17 @@ const loadPlaywright = () => {
   }
 };
 
-const MIME = {
-  '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.woff2': 'font/woff2',
-  '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.wav': 'audio/wav', '.mp3': 'audio/mpeg',
-  '.mp4': 'video/mp4', '.webm': 'video/webm', '.txt': 'text/plain',
-};
-
 /**
- * Serve the page's folder over HTTP on a free port. A file:// page cannot load JavaScript
- * modules or fetch data, so the page gets a real origin. Resolves to {url, close}.
+ * Serve the page's folder on a free port. A file:// page cannot load JavaScript modules or
+ * fetch data, so the page gets a real origin. Each /brand/ file the kit does not have goes
+ * into `missing`. Resolves to {url, brandFolder, close}.
+ * @param {string} pagePath
+ * @param {Set<string>} missing
  */
-const serve = (pagePath) =>
-  new Promise((resolve, reject) => {
-    const root = path.dirname(path.resolve(pagePath));
-    const page = path.basename(pagePath);
-    const server = http.createServer((req, res) => {
-      const rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-      const file = path.normalize(path.join(root, rel));
-      if (!file.startsWith(root)) {
-        res.writeHead(403).end();
-        return;
-      }
-      fs.readFile(file, (err, data) => {
-        if (err) {
-          res.writeHead(404).end(`not found: ${rel}`);
-          return;
-        }
-        res.writeHead(200, {'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream'});
-        res.end(data);
-      });
-    });
-    server.on('error', reject);
-    server.listen(0, '127.0.0.1', () => {
-      const {port} = server.address();
-      resolve({url: `http://127.0.0.1:${port}/${page}`, close: () => server.close()});
-    });
-  });
+const serve = async (pagePath, missing) => {
+  const site = await serveFolder(path.dirname(pagePath), {onMissingBrandFile: (p) => missing.add(p)});
+  return {...site, url: `${site.origin}/${encodeURIComponent(path.basename(pagePath))}`};
+};
 
 /** Which frame times to capture, as a list of {index, frame} where frame may be fractional. */
 const plan = (args, total, fps) => {
@@ -127,9 +104,15 @@ const plan = (args, total, fps) => {
   return out;
 };
 
-const waitReady = async (page, frame) => {
+/** Stop the run when the page asked for brand files the kit does not have. */
+const checkBrandFiles = (site) => {
+  if (site.missing.size > 0) throw new Error(missingBrandMessage([...site.missing], site.brandFolder));
+};
+
+const waitReady = async (page, frame, site) => {
   const started = Date.now();
   while (true) {
+    checkBrandFiles(site);
     const ready = await page.evaluate(() => window.video && window.video.ready());
     if (ready) return;
     if (Date.now() - started > READY_TIMEOUT_MS) {
@@ -159,7 +142,9 @@ const main = async () => {
     process.exit(1);
   });
 
-  const site = /^https?:\/\//.test(pagePath) ? {url: pagePath, close: () => null} : await serve(pagePath);
+  const missing = new Set();
+  const served = /^https?:\/\//.test(pagePath) ? {url: pagePath, brandFolder: null, close: () => null} : await serve(pagePath, missing);
+  const site = {...served, missing};
   const page = await browser.newPage({deviceScaleFactor: args.scale, viewport: {width: 100, height: 100}});
   page.on('pageerror', (e) => console.error(`page error: ${e.message}`));
   page.on('console', (m) => {
@@ -192,8 +177,9 @@ const main = async () => {
       const {index, frame} = frames[i];
       const t0 = Date.now();
       await page.evaluate((f) => window.video.setFrame(f), frame);
-      await waitReady(page, frame);
+      await waitReady(page, frame, site);
       await twoPaints(page);
+      checkBrandFiles(site);
       const file = path.join(outDir, `f${String(index).padStart(pad, '0')}.png`);
       await page.screenshot({...screenshotOpts, path: file});
       const ms = Date.now() - t0;
@@ -204,6 +190,7 @@ const main = async () => {
         lastReport = Date.now();
       }
     }
+    checkBrandFiles(site);
     process.stdout.write('\n');
   } catch (e) {
     process.stdout.write('\n');
