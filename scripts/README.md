@@ -1,6 +1,6 @@
 # Scripts
 
-The repeatable jobs, written once and run the same way on every video. Each script takes file paths as arguments and prints what it did. They need ffmpeg, Python with numpy, scipy and Pillow, Node, and Playwright for the capture script. `SETUP.md` at the top of the skill installs all of them.
+The repeatable jobs, written once and run the same way on every video. Each script takes file paths as arguments and prints what it did. They need ffmpeg, Python with numpy, scipy and Pillow, Node, and Playwright for the capture script. "Set it up" in the skill's `README.md` installs all of them.
 
 Every script here has run on finished videos.
 
@@ -9,7 +9,7 @@ Every script here has run on finished videos.
 | Script | What it does | Call |
 |---|---|---|
 | `page/runtime.js` | The page side of the capture pipeline. Copy it into the video project. Gives the page `video.onFrame`, `video.hold`, `video.random`, the easing curves and `video.progress`. Runs a preview with `?play`. | `<script src="runtime.js">` |
-| `capture.js` | Photographs the page frame by frame with Playwright. Serves the page's folder, and the brand kit folder at `/brand/` (`SETUP.md` step 3). Waits for every hold, font and image before each frame. Stops and names the hold if a frame is not ready in 20 s, and names the file if the brand kit lacks one the page asked for. | `node scripts/capture.js page.html out/frames [--frame N] [--from N --to N] [--every S] [--transparent] [--supersample K]` |
+| `capture.js` | Photographs the page frame by frame with Playwright. Serves the page's folder, and the brand kit folder at `/brand/` (step 5 of "Set it up" in the skill's `README.md`). Waits for every hold, font and image before each frame. Stops and names the hold if a frame is not ready in 20 s, and names the file if the brand kit lacks one the page asked for. | `node scripts/capture.js page.html out/frames [--frame N] [--from N --to N] [--every S] [--transparent] [--supersample K]` |
 | `preview.js` | Serves a video project for watching in a browser, with the brand kit at `/brand/`, the same way `capture.js` does. Warns about every brand file the kit lacks. | `node scripts/preview.js <project> [--port 8787]`, then open `http://127.0.0.1:8787/?play` |
 | `serve.js` | The local web server `capture.js` and `preview.js` share. Reads the brand kit from `GORGIAS_BRAND_KIT`, or `~/gorgias-brand`. Not run on its own. | — |
 | `synth/` | The music and sound-effect generator. A video's `score.ts` imports `studio.ts` (mix chain, core instruments) and `modern.ts` (the modern palette), and `analysis.ts` for audio-reactive parts. The score masters its own `mix.wav`. `synth/README.md` has the shape. | `node --experimental-strip-types score.ts` |

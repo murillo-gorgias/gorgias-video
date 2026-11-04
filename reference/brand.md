@@ -57,7 +57,7 @@ Motion and animation rules in `motion.md` are brand-wide. Use them on every Gorg
 
 ## Assets
 
-Fonts, logos and brand marks come from the brand kit that `brand:core` describes. A video page asks for them at the kit's own address, `/brand/`, exactly as `brand:core` writes it: `/brand/2026/fonts/InterVariable.woff2`, `/brand/primary-logo-white.svg`. Never copy brand kit files into a video project. The capture and the preview serve `/brand/` from the brand kit folder on the computer (`SETUP.md` step 3), so the render never fetches anything from the web. `examples/starter/README.md` lists the five files the starter uses.
+Fonts, logos and brand marks come from the brand kit that `brand:core` describes. A video page asks for them at the kit's own address, `/brand/`, exactly as `brand:core` writes it: `/brand/2026/fonts/InterVariable.woff2`, `/brand/primary-logo-white.svg`. Never copy brand kit files into a video project. The capture and the preview serve `/brand/` from the brand kit folder on the computer (step 5 of "Set it up" in the skill's `README.md`), so the render never fetches anything from the web. `examples/starter/README.md` lists the five files the starter uses.
 
 A video's own pictures, such as screenshots and channel icons, go in the project's `assets/` folder. Only brand kit files come from `/brand/`.
 

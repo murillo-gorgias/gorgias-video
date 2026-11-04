@@ -53,7 +53,7 @@ The capture loop waits until every hold is released before photographing. A hold
 
 Serve the folder with `node <skill>/scripts/preview.js <project>` (checked 2026-11-04) and open http://127.0.0.1:8787/?play to watch the video with sound. Click once: browsers only play sound after a click. The runtime runs a clock from the real time and calls `onFrame` with the matching frame, so the preview and the capture draw from the same code. `?frame=120` shows one frame still. `?play&from=10` starts at 10 s. The preview drops frames on heavy scenes; the capture never does. Verify on a rendered file, never the preview.
 
-A page opened straight from a file cannot load JavaScript modules or fetch data. That is why both the preview and `capture.js` serve the folder over HTTP. Both also serve the brand kit folder at `/brand/` (`SETUP.md` step 3), so the page uses the same brand addresses as every other Gorgias tool. A plain `python3 -m http.server` cannot serve `/brand/`, so its fonts and logos come out missing.
+A page opened straight from a file cannot load JavaScript modules or fetch data. That is why both the preview and `capture.js` serve the folder over HTTP. Both also serve the brand kit folder at `/brand/` (step 5 of "Set it up" in the skill's `README.md`), so the page uses the same brand addresses as every other Gorgias tool. A plain `python3 -m http.server` cannot serve `/brand/`, so its fonts and logos come out missing.
 
 ## Capture
 

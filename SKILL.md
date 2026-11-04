@@ -7,7 +7,7 @@ description: Make a Gorgias video from brief to finished file. Covers the script
 
 This skill takes a video from brief to finished file. Claude builds the video as a web page, photographs it frame by frame, makes the music in code, then checks and exports the result. Every tool it uses is free and open source.
 
-**First time on this computer?** Follow `SETUP.md` before step 1.
+**First time on this computer?** Follow "Set it up" in `README.md` before step 1. Its "When something goes wrong" table explains the scripts' error messages.
 
 ## The workflow
 

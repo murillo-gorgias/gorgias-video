@@ -7,7 +7,7 @@
  * comes from <brand kit folder>/2026/fonts/InterVariable.woff2.
  *
  * The brand kit folder is $GORGIAS_BRAND_KIT, or ~/gorgias-brand when that is not set.
- * SETUP.md step 3 describes the folder.
+ * Step 5 of "Set it up" in the skill's README.md describes the folder.
  */
 'use strict';
 
@@ -91,7 +91,7 @@ const missingBrandMessage = (missingPaths, brandFolder) => {
   return [
     `${where}:`,
     ...missingPaths.map((p) => `  ${p}`),
-    'SETUP.md step 3 describes the brand kit folder. To use a folder somewhere else, set GORGIAS_BRAND_KIT to its path.',
+    `Step 5 of "Set it up" in the skill's README.md describes the brand kit folder. To use a folder somewhere else, set GORGIAS_BRAND_KIT to its path.`,
   ].join('\n');
 };
 

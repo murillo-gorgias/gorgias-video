@@ -29,7 +29,7 @@ It shows the house approach in 16 seconds:
 
 1. **Copy this folder** to where the video project should live, and give it a name.
 2. **Copy the page runtime** from the skill: `scripts/page/runtime.js` into the project folder, next to `index.html`.
-3. **Check the brand kit folder.** The page loads its fonts and logos from `/brand/`, the brand kit's address in every Gorgias tool. The capture and the preview serve that address from the brand kit folder that the skill's `SETUP.md` step 3 describes. Nothing gets copied into the project. The starter uses these five files from the kit:
+3. **Check the brand kit folder.** The page loads its fonts and logos from `/brand/`, the brand kit's address in every Gorgias tool. The capture and the preview serve that address from the brand kit folder that step 5 of "Set it up" in the skill's `README.md` describes. Nothing gets copied into the project. The starter uses these five files from the kit:
 
    - `/brand/2026/fonts/FeatureDeck-Regular-Web.woff2`
    - `/brand/2026/fonts/InterVariable.woff2`
@@ -39,7 +39,7 @@ It shows the house approach in 16 seconds:
 
 4. **Point the score at the skill.** `score.ts` loads the synth from `~/.claude/skills/gorgias-video/scripts/synth/`. If the skill sits elsewhere, set `GORGIAS_VIDEO_SKILL=/path/to/gorgias-video` when you run it, or change the `SKILL` line at the top of `score.ts`.
 
-The skill's `scripts/README.md` lists what the scripts need: ffmpeg, Python with numpy, scipy and Pillow, Node 22.6 or newer, and Playwright.
+The skill's `README.md` lists what the scripts need and how to install it.
 
 ## Run it
 
