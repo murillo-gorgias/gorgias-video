@@ -9,6 +9,7 @@ This file covers everything needed to run the skill: what to install, how to che
 - **A Mac with Homebrew.** On Linux, install the same tools with the system's package manager.
 - **Claude Code.**
 - **Access to this repo.**
+- **Access to the `context-factory` plugin** (`gorgias/context-factory` on GitHub). Step 4 installs Cortex's brand skills from it.
 - **The Gorgias brand kit,** shared by the brand team. Step 5 below says where it goes.
 
 ## Set it up
@@ -106,7 +107,11 @@ A video that plays with music and shows the Gorgias logo at the end means every 
 
 ## Make a video
 
-Make an empty folder for the video, open Claude Code in it, and ask. For example:
+Make an empty folder for the video, open Claude Code in it, and ask for the video you want.
+
+**Share high-fidelity designs and flows for better results.** Give Claude the screens and steps the video should show, as Figma links or as images. Claude then rebuilds those designs in the video. Without them, it invents generic interfaces. Figma links need the Figma plugin in Claude Code. Images work without it.
+
+Example requests:
 
 - "Use the gorgias-video skill to make a 20-second LinkedIn video about our new order tracking."
 - "Make an animated GIF for an email header that shows AI Agent answering a question."
